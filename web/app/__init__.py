@@ -21,12 +21,14 @@ cfg = {
         "filaweb_ws_url": os.environ.get('FILAWEB_WS_URL', "http://filaweb.prusa/ws/ws.php"),
         "nfc_writer_socket_path": os.environ.get('NFC_WRITER_SOCKET_PATH', "/tmp/nfc_writer_socket.sock"),
         "mdb_path": os.environ.get('MDB_PATH', "mdb_data.json"),
+        "open_print_tag_utils": os.environ.get('OPEN_PRINT_TAG_UTILS', "../../OpenPrintTag/utils"), # Default: relative to current working directory
+        "open_print_tag_python": os.environ.get('OPEN_PRINT_TAG_PYTHON', "../venv/bin/python"),     # Default: relative to utils
         }
 
 
 filaweb_client = FilawebAPI(cfg['filaweb_ws_url'])
 nfc_writer_client = NFCWriter(cfg['nfc_writer_socket_path'])
-tag_creator = TagCreator(cfg['mdb_path'])
+tag_creator = TagCreator(cfg['mdb_path'], cfg['open_print_tag_utils'], cfg['open_print_tag_python'])
 
 @app.route('/api/nfc_writer/write_spool/<string:spool_unique_id>', methods=['POST'])
 def write_spool(spool_unique_id):

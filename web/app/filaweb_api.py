@@ -8,6 +8,8 @@ from typing import Optional
 class SpoolInfo:
     final_ff_goods_id: str
     spool_unique_id: str
+    cut_timestamp: float
+    filament_weight: float
     tag_uid: str
     gtin: str
 
@@ -55,10 +57,25 @@ class FilawebAPI:
 
             final_ff_goods_id = data["measured_values"].get("final_ff_goods_id")
             spool_unique_id = data["info"]["spool"].get("unique_id")
+            cut_timestamp = data["info"]["spool"].get("utc_cut")
+
+            filament = data["measured_values"].get("filament")
+            if not filament:
+                print(data)
+                self.logger.warning("missing filament info, returning None")
+                return None
+            weight = filament.get("weight")
+            if not weight:
+                print(data)
+                self.logger.warning("missing weight info, returning None")
+                return None
+            filament_weight = weight.get("value")
+
             tag_uid = data["info"]["spool"].get("rfid_uhf")
             gtin = product_info.get("ean") if product_info and product_info.get("ean") else ""
 
-            if not all([final_ff_goods_id, spool_unique_id]):
+            if not all([final_ff_goods_id, spool_unique_id, cut_timestamp, filament_weight]):
+                print(data)
                 self.logger.warning("Essential fields missing, returning None")
                 return None
 
@@ -66,6 +83,8 @@ class FilawebAPI:
             return SpoolInfo(
                 final_ff_goods_id=final_ff_goods_id,
                 spool_unique_id=spool_unique_id,
+                cut_timestamp=float(cut_timestamp),
+                filament_weight=float(filament_weight),
                 tag_uid=tag_uid,
                 gtin=gtin,
             )
